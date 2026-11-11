@@ -1,4 +1,4 @@
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE  1
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -28,211 +28,222 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
   00000005            00010 TAIL     EQU 0X05                  ; address of the buffer read index (0 to 15), changed only by the mai
                             n loop
   00000020            00011 BUFFER   EQU 0X20                  ; start address of the 16-byte receive buffer (0x20 to 0x2F)
-                      00012 
-000000                00013         ORG 0X00                       ; place the code at the reset vector (address 0)
-000000 EF14 F000      00014         GOTO START                     ; jump over the interrupt vector to the start of the program
-000008                00015         ORG 0X08                       ; place the next code at the interrupt vector (address 8)
-                      00016 
-000008                00017 ISR                                ; label: interrupt routine, runs whenever a character is received
-000008 2804           00018         INCF HEAD, W                   ; W = head + 1, the next write index
-00000A 0B0F           00019         ANDLW 0X0F                     ; wrap the index back to 0 after 15
-00000C 6205           00020         CPFSEQ TAIL                    ; skip the next line if the next index equals tail (buffer full)
-00000E D002           00021         BRA STORE                      ; buffer not full, go and store the character
-000010 50AE           00022         MOVF RCREG, W                  ; buffer full: read and discard the character (this also clears R
-                            CIF)
-000012 0011           00023         RETFIE FAST                    ; return from the interrupt, restoring W, STATUS and BSR automati
+  00000006            00012 RX_CHAR  EQU 0X06                  ; address of the received character, kept while the ISR works with W
+                      00013 
+000000                00014         ORG 0X00                       ; place the code at the reset vector (address 0)
+000000 EF18 F000      00015         GOTO START                     ; jump over the interrupt vector to the start of the program
+000008                00016         ORG 0X08                       ; place the next code at the interrupt vector (address 8)
+                      00017 
+000008                00018 ISR                                ; label: interrupt routine, runs whenever a character is received
+000008 50AE           00019         MOVF RCREG, W                  ; read the received character into W (this also clears RCIF)
+00000A 6E06           00020         MOVWF RX_CHAR                  ; save it, because W will be reused below
+00000C                00021 ECHO_WAIT                          ; label: wait until the transmitter can accept a character
+00000C A89E           00022         BTFSS PIR1, TXIF               ; skip the next line if TXIF = 1 (TXREG is empty)
+00000E D7FE           00023         BRA ECHO_WAIT                  ; transmitter still busy, check again (at most about 1 ms)
+000010 6EAD           00024         MOVWF TXREG                    ; send the character back to the terminal (W still holds it)
+000012 2804           00025         INCF HEAD, W                   ; W = head + 1, the next write index
+000014 0B0F           00026         ANDLW 0X0F                     ; wrap the index back to 0 after 15
+000016 6205           00027         CPFSEQ TAIL                    ; skip the next line if the next index equals tail (buffer full)
+000018 D001           00028         BRA STORE                      ; buffer not full, go and store the character
+00001A 0011           00029         RETFIE FAST                    ; buffer full: the character is dropped, return and restore W, ST
+                            ATUS and BSR
+00001C                00030 STORE                              ; label: there is room in the buffer
+00001C EE00 F020      00031         LFSR 0, BUFFER                 ; point FSR0 to the start of the buffer
+000020 5004           00032         MOVF HEAD, W                   ; W = write index
+000022 26E9           00033         ADDWF FSR0L, F                 ; FSR0 now points to the free slot (buffer + head)
+000024 5006           00034         MOVF RX_CHAR, W                ; get the saved character back into W
+000026 6EEF           00035         MOVWF INDF0                    ; store it in the buffer slot that FSR0 points to
+000028 2804           00036         INCF HEAD, W                   ; W = head + 1
+00002A 0B0F           00037         ANDLW 0X0F                     ; wrap the index back to 0 after 15
+00002C 6E04           00038         MOVWF HEAD                     ; save the new write index
+00002E 0011           00039         RETFIE FAST                    ; return from the interrupt, restoring W, STATUS and BSR automati
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
                             cally
-000014                00024 STORE                              ; label: there is room in the buffer
-000014 EE00 F020      00025         LFSR 0, BUFFER                 ; point FSR0 to the start of the buffer
-000018 5004           00026         MOVF HEAD, W                   ; W = write index
-00001A 26E9           00027         ADDWF FSR0L, F                 ; FSR0 now points to the free slot (buffer + head)
-00001C 50AE           00028         MOVF RCREG, W                  ; read the received character (this also clears RCIF)
-00001E 6EEF           00029         MOVWF INDF0                    ; store it in the buffer slot that FSR0 points to
-000020 2804           00030         INCF HEAD, W                   ; W = head + 1
-000022 0B0F           00031         ANDLW 0X0F                     ; wrap the index back to 0 after 15
-000024 6E04           00032         MOVWF HEAD                     ; save the new write index
-000026 0011           00033         RETFIE FAST                    ; return from the interrupt, restoring W, STATUS and BSR automati
-                            cally
-                      00034 
-000028                00035 START                              ; label: start of the main program
-000028 0E60           00036         MOVLW B'01100000'              ; IRCF2:IRCF0 = 110, which selects 4 MHz for the internal oscilla
+                      00040 
+000030                00041 START                              ; label: start of the main program
+000030 0E60           00042         MOVLW B'01100000'              ; IRCF2:IRCF0 = 110, which selects 4 MHz for the internal oscilla
                             tor
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE  2
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-00002A 6ED3           00037         MOVWF OSCCON                   ; apply the 4 MHz clock setting
-00002C 0E19           00038         MOVLW D'25'                    ; SPBRG value for 9600 baud at 4 MHz with BRGH = 1
-00002E 6EAF           00039         MOVWF SPBRG                    ; load the baud rate generator
-000030 0E24           00040         MOVLW B'00100100'              ; TXEN = 1 (enable transmit), SYNC = 0 (asynchronous), BRGH = 1 (
+000032 6ED3           00043         MOVWF OSCCON                   ; apply the 4 MHz clock setting
+000034 0E19           00044         MOVLW D'25'                    ; SPBRG value for 9600 baud at 4 MHz with BRGH = 1
+000036 6EAF           00045         MOVWF SPBRG                    ; load the baud rate generator
+000038 0E24           00046         MOVLW B'00100100'              ; TXEN = 1 (enable transmit), SYNC = 0 (asynchronous), BRGH = 1 (
                             high speed)
-000032 6EAC           00041         MOVWF TXSTA                    ; configure the transmitter
-000034 0E90           00042         MOVLW B'10010000'              ; SPEN = 1 (enable serial port), CREN = 1 (enable continuous rece
+00003A 6EAC           00047         MOVWF TXSTA                    ; configure the transmitter
+00003C 0E90           00048         MOVLW B'10010000'              ; SPEN = 1 (enable serial port), CREN = 1 (enable continuous rece
                             ive)
-000036 6EAB           00043         MOVWF RCSTA                    ; configure the receiver and turn on the serial port
-000038 908B           00044         BCF LATC, 0                    ; set the RC0 output latch to 0 so the LED starts off
-00003A 9094           00045         BCF TRISC, 0                   ; make RC0 an output (0 = output)
-00003C 6A04           00046         CLRF HEAD                      ; start with the write index at 0 (RAM is not cleared at power-up
+00003E 6EAB           00049         MOVWF RCSTA                    ; configure the receiver and turn on the serial port
+000040 908B           00050         BCF LATC, 0                    ; set the RC0 output latch to 0 so the LED starts off
+000042 9094           00051         BCF TRISC, 0                   ; make RC0 an output (0 = output)
+000044 6A04           00052         CLRF HEAD                      ; start with the write index at 0 (RAM is not cleared at power-up
                             )
-00003E 6A05           00047         CLRF TAIL                      ; start with the read index at 0, so the buffer is empty
-000040 8A9D           00048         BSF PIE1, RCIE                 ; enable the UART receive interrupt
-000042 0EC0           00049         MOVLW B'11000000'              ; GIE = 1 (global interrupts on), PEIE = 1 (peripheral interrupts
+000046 6A05           00053         CLRF TAIL                      ; start with the read index at 0, so the buffer is empty
+000048 8A9D           00054         BSF PIE1, RCIE                 ; enable the UART receive interrupt
+00004A 0EC0           00055         MOVLW B'11000000'              ; GIE = 1 (global interrupts on), PEIE = 1 (peripheral interrupts
                              on)
-000044 6EF2           00050         MOVWF INTCON                   ; turn the interrupts on
-                      00051 
-000046                00052 MAIN_LOOP                          ; label: start of the loop that takes characters from the buffer
-000046 5005           00053         MOVF TAIL, W                   ; W = read index
-000048 6204           00054         CPFSEQ HEAD                    ; skip the next line if head equals tail (buffer empty)
-00004A D001           00055         BRA TAKE                       ; buffer not empty, go and take a character
-00004C D7FC           00056         BRA MAIN_LOOP                  ; buffer empty, check again
-00004E                00057 TAKE                               ; label: there is a character waiting in the buffer
-00004E EE10 F020      00058         LFSR 1, BUFFER                 ; point FSR1 to the start of the buffer
-000052 5005           00059         MOVF TAIL, W                   ; W = read index
-000054 26E1           00060         ADDWF FSR1L, F                 ; FSR1 now points to the oldest character (buffer + tail)
-000056 50E7           00061         MOVF INDF1, W                  ; W = the oldest character
-000058 6E03           00062         MOVWF CHAR_IN                  ; save the character
-00005A 2805           00063         INCF TAIL, W                   ; W = tail + 1
-00005C 0B0F           00064         ANDLW 0X0F                     ; wrap the index back to 0 after 15
-00005E 6E05           00065         MOVWF TAIL                     ; save the new read index, which frees the slot
-000060 0E20           00066         MOVLW ' '                      ; load the ASCII code of a space (0x20)
-000062 6203           00067         CPFSEQ CHAR_IN                 ; skip the next line if the character is a space
-000064 D002           00068         BRA NOT_SPACE                  ; not a space, go and convert it
-000066 D83B           00069         RCALL WORD_GAP                 ; space: add 4T of low to reach the 7T gap between words
-000068 D7EE           00070         BRA MAIN_LOOP                  ; go back and look for the next character
-00006A                00071 NOT_SPACE                          ; label: the character is not a space
-00006A D806           00072         RCALL GET_CODE                 ; convert char_in into its Morse code byte (W = 0 if invalid)
-00006C 66E8           00073         TSTFSZ WREG                    ; skip the next line if W = 0 (invalid character)
-00006E D001           00074         BRA PLAY                       ; valid character, go and play it
-000070 D7EA           00075         BRA MAIN_LOOP                  ; invalid character: ignore it and look for the next one
-000072                00076 PLAY                               ; label: the character is valid
-000072 D81E           00077         RCALL SEND_CODE                ; play the code as dots and dashes on RC0
-000074 D831           00078         RCALL CHAR_GAP                 ; add 2T of low, so the total low after the last element is 3T
-000076 D7E7           00079         BRA MAIN_LOOP                  ; go back and look for the next character
-                      00080 
-000078                00081 GET_CODE                           ; label: converts char_in into its Morse code byte in W (0 if invalid
+00004C 6EF2           00056         MOVWF INTCON                   ; turn the interrupts on
+                      00057 
+00004E                00058 MAIN_LOOP                          ; label: start of the loop that takes characters from the buffer
+00004E 5005           00059         MOVF TAIL, W                   ; W = read index
+000050 6204           00060         CPFSEQ HEAD                    ; skip the next line if head equals tail (buffer empty)
+000052 D001           00061         BRA TAKE                       ; buffer not empty, go and take a character
+000054 D7FC           00062         BRA MAIN_LOOP                  ; buffer empty, check again
+000056                00063 TAKE                               ; label: there is a character waiting in the buffer
+000056 EE10 F020      00064         LFSR 1, BUFFER                 ; point FSR1 to the start of the buffer
+00005A 5005           00065         MOVF TAIL, W                   ; W = read index
+00005C 26E1           00066         ADDWF FSR1L, F                 ; FSR1 now points to the oldest character (buffer + tail)
+00005E 50E7           00067         MOVF INDF1, W                  ; W = the oldest character
+000060 6E03           00068         MOVWF CHAR_IN                  ; save the character
+000062 2805           00069         INCF TAIL, W                   ; W = tail + 1
+000064 0B0F           00070         ANDLW 0X0F                     ; wrap the index back to 0 after 15
+000066 6E05           00071         MOVWF TAIL                     ; save the new read index, which frees the slot
+000068 0E20           00072         MOVLW ' '                      ; load the ASCII code of a space (0x20)
+00006A 6203           00073         CPFSEQ CHAR_IN                 ; skip the next line if the character is a space
+00006C D002           00074         BRA NOT_SPACE                  ; not a space, go and convert it
+00006E D83B           00075         RCALL WORD_GAP                 ; space: add 4T of low to reach the 7T gap between words
+000070 D7EE           00076         BRA MAIN_LOOP                  ; go back and look for the next character
+000072                00077 NOT_SPACE                          ; label: the character is not a space
+000072 D806           00078         RCALL GET_CODE                 ; convert char_in into its Morse code byte (W = 0 if invalid)
+000074 66E8           00079         TSTFSZ WREG                    ; skip the next line if W = 0 (invalid character)
+000076 D001           00080         BRA PLAY                       ; valid character, go and play it
+000078 D7EA           00081         BRA MAIN_LOOP                  ; invalid character: ignore it and look for the next one
+00007A                00082 PLAY                               ; label: the character is valid
+00007A D81E           00083         RCALL SEND_CODE                ; play the code as dots and dashes on RC0
+00007C D831           00084         RCALL CHAR_GAP                 ; add 2T of low, so the total low after the last element is 3T
+00007E D7E7           00085         BRA MAIN_LOOP                  ; go back and look for the next character
+                      00086 
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000080                00087 GET_CODE                           ; label: converts char_in into its Morse code byte in W (0 if invalid
                             )
-000078 0E2F           00082         MOVLW '/'                      ; load 0x2F, the character just below '0'
-00007A 6403           00083         CPFSGT CHAR_IN                 ; skip the next line if char_in > '/' (the character is '0' or ab
+000080 0E2F           00088         MOVLW '/'                      ; load 0x2F, the character just below '0'
+000082 6403           00089         CPFSGT CHAR_IN                 ; skip the next line if char_in > '/' (the character is '0' or ab
                             ove)
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE  3
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-00007C 0C00           00084         RETLW 0                        ; below '0': invalid, return 0
-00007E 0E3A           00085         MOVLW ':'                      ; load 0x3A, the character just above '9'
-000080 6003           00086         CPFSLT CHAR_IN                 ; skip the next line if char_in < ':' (the character is '9' or be
+000084 0C00           00090         RETLW 0                        ; below '0': invalid, return 0
+000086 0E3A           00091         MOVLW ':'                      ; load 0x3A, the character just above '9'
+000088 6003           00092         CPFSLT CHAR_IN                 ; skip the next line if char_in < ':' (the character is '9' or be
                             low)
-000082 D003           00087         BRA CHECK_LETTER               ; above '9': it may be a letter
-000084 0E16           00088         MOVLW D'22'                    ; '0' is 48, and 48 - 22 = 26, the table index of '0'
-000086 5E03           00089         SUBWF CHAR_IN, F               ; char_in = digit index (26 to 35)
-000088 D008           00090         BRA READ_TABLE                 ; go and read the table
-00008A                00091 CHECK_LETTER                       ; label: the character is above '9'
-00008A 0E40           00092         MOVLW '@'                      ; load 0x40, the character just below 'A'
-00008C 6403           00093         CPFSGT CHAR_IN                 ; skip the next line if char_in > '@' (the character is 'A' or ab
+00008A D003           00093         BRA CHECK_LETTER               ; above '9': it may be a letter
+00008C 0E16           00094         MOVLW D'22'                    ; '0' is 48, and 48 - 22 = 26, the table index of '0'
+00008E 5E03           00095         SUBWF CHAR_IN, F               ; char_in = digit index (26 to 35)
+000090 D008           00096         BRA READ_TABLE                 ; go and read the table
+000092                00097 CHECK_LETTER                       ; label: the character is above '9'
+000092 0E40           00098         MOVLW '@'                      ; load 0x40, the character just below 'A'
+000094 6403           00099         CPFSGT CHAR_IN                 ; skip the next line if char_in > '@' (the character is 'A' or ab
                             ove)
-00008E 0C00           00094         RETLW 0                        ; between ':' and '@': invalid, return 0
-000090 0E5B           00095         MOVLW '['                      ; load 0x5B, the character just above 'Z'
-000092 6003           00096         CPFSLT CHAR_IN                 ; skip the next line if char_in < '[' (the character is 'Z' or be
+000096 0C00           00100         RETLW 0                        ; between ':' and '@': invalid, return 0
+000098 0E5B           00101         MOVLW '['                      ; load 0x5B, the character just above 'Z'
+00009A 6003           00102         CPFSLT CHAR_IN                 ; skip the next line if char_in < '[' (the character is 'Z' or be
                             low)
-000094 0C00           00097         RETLW 0                        ; above 'Z' (lowercase included): invalid, return 0
-000096 0E41           00098         MOVLW 'A'                      ; load the ASCII code of 'A' (0x41)
-000098 5E03           00099         SUBWF CHAR_IN, F               ; char_in = letter index (0 to 25)
-00009A                00100 READ_TABLE                         ; label: char_in now holds the table index
-00009A 0E00           00101         MOVLW LOW MORSE_TABLE          ; load the low byte of the table address
-00009C 6EF6           00102         MOVWF TBLPTRL                  ; store it in the table pointer
-00009E 0E01           00103         MOVLW HIGH MORSE_TABLE         ; load the high byte of the table address
-0000A0 6EF7           00104         MOVWF TBLPTRH                  ; store it in the table pointer
-0000A2 5003           00105         MOVF CHAR_IN, W                ; load the index into W
-0000A4 26F6           00106         ADDWF TBLPTRL, F               ; point to the table start + index (low byte)
-0000A6 0E00           00107         MOVLW 0                        ; load 0 into W (movlw does not change C)
-0000A8 22F7           00108         ADDWFC TBLPTRH, F              ; add the carry from the low byte to the high byte
-0000AA 0008           00109         TBLRD*                         ; read the table byte at that address into TABLAT
-0000AC 50F5           00110         MOVF TABLAT, W                 ; copy the Morse code byte into W
-0000AE 0012           00111         RETURN                         ; go back to the caller
-                      00112 
-0000B0                00113 SEND_CODE                          ; label: plays the Morse code byte in W as dots and dashes
-0000B0 6E02           00114         MOVWF CODE_REG                 ; save the code byte
-0000B2                00115 NEXT_ELEM                          ; label: start of one element (dot or dash)
-0000B2 90D8           00116         BCF STATUS, C                  ; clear the carry so a 0 enters bit 7 during the shift
-0000B4 3202           00117         RRCF CODE_REG, F               ; shift right: the old bit 0 (the current element) goes into C
-0000B6 E202           00118         BC SEND_DASH                   ; if C = 1 the element is a dash
-0000B8 D805           00119         RCALL DOT                      ; C = 0: send a dot
-0000BA D001           00120         BRA ELEM_DONE                  ; skip the dash call
-0000BC                00121 SEND_DASH                          ; label: the element is a dash
-0000BC D808           00122         RCALL DASH                     ; send a dash
-0000BE                00123 ELEM_DONE                          ; label: element finished
-0000BE 0402           00124         DECF CODE_REG, W               ; W = code_reg - 1, which is 0 when only the end marker bit is le
+00009C 0C00           00103         RETLW 0                        ; above 'Z' (lowercase included): invalid, return 0
+00009E 0E41           00104         MOVLW 'A'                      ; load the ASCII code of 'A' (0x41)
+0000A0 5E03           00105         SUBWF CHAR_IN, F               ; char_in = letter index (0 to 25)
+0000A2                00106 READ_TABLE                         ; label: char_in now holds the table index
+0000A2 0E08           00107         MOVLW LOW MORSE_TABLE          ; load the low byte of the table address
+0000A4 6EF6           00108         MOVWF TBLPTRL                  ; store it in the table pointer
+0000A6 0E01           00109         MOVLW HIGH MORSE_TABLE         ; load the high byte of the table address
+0000A8 6EF7           00110         MOVWF TBLPTRH                  ; store it in the table pointer
+0000AA 5003           00111         MOVF CHAR_IN, W                ; load the index into W
+0000AC 26F6           00112         ADDWF TBLPTRL, F               ; point to the table start + index (low byte)
+0000AE 0E00           00113         MOVLW 0                        ; load 0 into W (movlw does not change C)
+0000B0 22F7           00114         ADDWFC TBLPTRH, F              ; add the carry from the low byte to the high byte
+0000B2 0008           00115         TBLRD*                         ; read the table byte at that address into TABLAT
+0000B4 50F5           00116         MOVF TABLAT, W                 ; copy the Morse code byte into W
+0000B6 0012           00117         RETURN                         ; go back to the caller
+                      00118 
+0000B8                00119 SEND_CODE                          ; label: plays the Morse code byte in W as dots and dashes
+0000B8 6E02           00120         MOVWF CODE_REG                 ; save the code byte
+0000BA                00121 NEXT_ELEM                          ; label: start of one element (dot or dash)
+0000BA 90D8           00122         BCF STATUS, C                  ; clear the carry so a 0 enters bit 7 during the shift
+0000BC 3202           00123         RRCF CODE_REG, F               ; shift right: the old bit 0 (the current element) goes into C
+0000BE E202           00124         BC SEND_DASH                   ; if C = 1 the element is a dash
+0000C0 D805           00125         RCALL DOT                      ; C = 0: send a dot
+0000C2 D001           00126         BRA ELEM_DONE                  ; skip the dash call
+0000C4                00127 SEND_DASH                          ; label: the element is a dash
+0000C4 D808           00128         RCALL DASH                     ; send a dash
+0000C6                00129 ELEM_DONE                          ; label: element finished
+0000C6 0402           00130         DECF CODE_REG, W               ; W = code_reg - 1, which is 0 when only the end marker bit is le
                             ft
-0000C0 E1F8           00125         BNZ NEXT_ELEM                  ; not 0: elements remain, send the next one
-0000C2 0012           00126         RETURN                         ; only the marker is left, the character is finished
-                      00127 
-0000C4                00128 DOT                                ; label: dot routine
-0000C4 808B           00129         BSF LATC, 0                    ; set RC0 high, signal and LED on
-0000C6 D80E           00130         RCALL DELAY_1T                 ; keep it high for 1T (100 ms)
-0000C8 908B           00131         BCF LATC, 0                    ; set RC0 low, signal and LED off
-0000CA D80C           00132         RCALL DELAY_1T                 ; keep it low for 1T, the gap after an element
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE  4
+0000C8 E1F8           00131         BNZ NEXT_ELEM                  ; not 0: elements remain, send the next one
+0000CA 0012           00132         RETURN                         ; only the marker is left, the character is finished
+                      00133 
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0000CC 0012           00133         RETURN                         ; go back to the caller
-                      00134 
-0000CE                00135 DASH                               ; label: dash routine
-0000CE 808B           00136         BSF LATC, 0                    ; set RC0 high, signal and LED on
-0000D0 D813           00137         RCALL DELAY_3T                 ; keep it high for 3T (300 ms)
-0000D2 908B           00138         BCF LATC, 0                    ; set RC0 low, signal and LED off
-0000D4 D807           00139         RCALL DELAY_1T                 ; keep it low for 1T, the gap after an element
-0000D6 0012           00140         RETURN                         ; go back to the caller
-                      00141 
-0000D8                00142 CHAR_GAP                           ; label: gap between characters (2T added to the 1T already done)
-0000D8 D805           00143         RCALL DELAY_1T                 ; wait 1T
-0000DA D804           00144         RCALL DELAY_1T                 ; wait another 1T, so 2T in total
-0000DC 0012           00145         RETURN                         ; go back to the caller
-                      00146 
-0000DE                00147 WORD_GAP                           ; label: gap between words (4T added to the 3T already done)
-0000DE D80C           00148         RCALL DELAY_3T                 ; wait 3T
-0000E0 D801           00149         RCALL DELAY_1T                 ; wait 1T more, so 4T in total
-0000E2 0012           00150         RETURN                         ; go back to the caller
-                      00151 
-0000E4                00152 DELAY_1T                           ; label: 1T delay routine, 100 ms at 4 MHz
-0000E4 0E64           00153         MOVLW D'100'                   ; load 100 into W (100 passes of 1 ms each)
-0000E6 6E00           00154         MOVWF CNT_OUT                  ; store it in the outer counter
-0000E8                00155 OUTER_LOOP                         ; label: start of one 1 ms pass
-0000E8 0EF9           00156         MOVLW D'249'                   ; load 249 into W (number of inner iterations)
-0000EA 6E01           00157         MOVWF CNT_IN                   ; store it in the inner counter
-0000EC                00158 INNER_LOOP                         ; label: start of the inner loop
-0000EC 0000           00159         NOP                            ; do nothing for 1 cycle, so each inner turn takes 4 cycles
-0000EE 2E01           00160         DECFSZ CNT_IN, F               ; decrement the inner counter, skip the next line when it reaches
+0000CC                00134 DOT                                ; label: dot routine
+0000CC 808B           00135         BSF LATC, 0                    ; set RC0 high, signal and LED on
+0000CE D80E           00136         RCALL DELAY_1T                 ; keep it high for 1T (100 ms)
+0000D0 908B           00137         BCF LATC, 0                    ; set RC0 low, signal and LED off
+0000D2 D80C           00138         RCALL DELAY_1T                 ; keep it low for 1T, the gap after an element
+0000D4 0012           00139         RETURN                         ; go back to the caller
+                      00140 
+0000D6                00141 DASH                               ; label: dash routine
+0000D6 808B           00142         BSF LATC, 0                    ; set RC0 high, signal and LED on
+0000D8 D813           00143         RCALL DELAY_3T                 ; keep it high for 3T (300 ms)
+0000DA 908B           00144         BCF LATC, 0                    ; set RC0 low, signal and LED off
+0000DC D807           00145         RCALL DELAY_1T                 ; keep it low for 1T, the gap after an element
+0000DE 0012           00146         RETURN                         ; go back to the caller
+                      00147 
+0000E0                00148 CHAR_GAP                           ; label: gap between characters (2T added to the 1T already done)
+0000E0 D805           00149         RCALL DELAY_1T                 ; wait 1T
+0000E2 D804           00150         RCALL DELAY_1T                 ; wait another 1T, so 2T in total
+0000E4 0012           00151         RETURN                         ; go back to the caller
+                      00152 
+0000E6                00153 WORD_GAP                           ; label: gap between words (4T added to the 3T already done)
+0000E6 D80C           00154         RCALL DELAY_3T                 ; wait 3T
+0000E8 D801           00155         RCALL DELAY_1T                 ; wait 1T more, so 4T in total
+0000EA 0012           00156         RETURN                         ; go back to the caller
+                      00157 
+0000EC                00158 DELAY_1T                           ; label: 1T delay routine, 100 ms at 4 MHz
+0000EC 0E64           00159         MOVLW D'100'                   ; load 100 into W (100 passes of 1 ms each)
+0000EE 6E00           00160         MOVWF CNT_OUT                  ; store it in the outer counter
+0000F0                00161 OUTER_LOOP                         ; label: start of one 1 ms pass
+0000F0 0EF9           00162         MOVLW D'249'                   ; load 249 into W (number of inner iterations)
+0000F2 6E01           00163         MOVWF CNT_IN                   ; store it in the inner counter
+0000F4                00164 INNER_LOOP                         ; label: start of the inner loop
+0000F4 0000           00165         NOP                            ; do nothing for 1 cycle, so each inner turn takes 4 cycles
+0000F6 2E01           00166         DECFSZ CNT_IN, F               ; decrement the inner counter, skip the next line when it reaches
                              0
-0000F0 D7FD           00161         BRA INNER_LOOP                 ; inner counter not 0 yet, repeat
-0000F2 2E00           00162         DECFSZ CNT_OUT, F              ; decrement the outer counter, skip the next line when it reaches
+0000F8 D7FD           00167         BRA INNER_LOOP                 ; inner counter not 0 yet, repeat
+0000FA 2E00           00168         DECFSZ CNT_OUT, F              ; decrement the outer counter, skip the next line when it reaches
                              0
-0000F4 D7F9           00163         BRA OUTER_LOOP                 ; outer counter not 0 yet, do another pass
-0000F6 0012           00164         RETURN                         ; delay finished, go back to the caller
-                      00165 
-0000F8                00166 DELAY_3T                           ; label: 3T delay routine (300 ms)
-0000F8 DFF5           00167         RCALL DELAY_1T                 ; wait 1T
-0000FA DFF4           00168         RCALL DELAY_1T                 ; wait another 1T
-0000FC DFF3           00169         RCALL DELAY_1T                 ; wait a third 1T
-0000FE 0012           00170         RETURN                         ; go back to the caller
+0000FC D7F9           00169         BRA OUTER_LOOP                 ; outer counter not 0 yet, do another pass
+0000FE 0012           00170         RETURN                         ; delay finished, go back to the caller
                       00171 
-000100                00172 MORSE_TABLE                        ; label: Morse codes, A to Z then 0 to 9 (36 bytes)
-000100 1106 0915 1402 00173         DB 0X06, 0X11, 0X15, 0X09, 0X02, 0X14, 0X0B, 0X10, 0X04, 0X1E   ; codes for A B C D E F G H I J
-       100B 1E04 
-00010A 120D 0507 160F 00174         DB 0X0D, 0X12, 0X07, 0X05, 0X0F, 0X16, 0X1B, 0X0A, 0X08, 0X03   ; codes for K L M N O P Q R S T
-       0A1B 0308 
-000114 180C 190E 131D 00175         DB 0X0C, 0X18, 0X0E, 0X19, 0X1D, 0X13                           ; codes for U V W X Y Z
-00011A 3E3F 383C 2030 00176         DB 0X3F, 0X3E, 0X3C, 0X38, 0X30, 0X20, 0X21, 0X23, 0X27, 0X2F   ; codes for 0 1 2 3 4 5 6 7 8 9
-       2321 2F27 
+000100                00172 DELAY_3T                           ; label: 3T delay routine (300 ms)
+000100 DFF5           00173         RCALL DELAY_1T                 ; wait 1T
+000102 DFF4           00174         RCALL DELAY_1T                 ; wait another 1T
+000104 DFF3           00175         RCALL DELAY_1T                 ; wait a third 1T
+000106 0012           00176         RETURN                         ; go back to the caller
                       00177 
-                      00178         END
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE  5
+000108                00178 MORSE_TABLE                        ; label: Morse codes, A to Z then 0 to 9 (36 bytes)
+000108 1106 0915 1402 00179         DB 0X06, 0X11, 0X15, 0X09, 0X02, 0X14, 0X0B, 0X10, 0X04, 0X1E   ; codes for A B C D E F G H I J
+       100B 1E04 
+000112 120D 0507 160F 00180         DB 0X0D, 0X12, 0X07, 0X05, 0X0F, 0X16, 0X1B, 0X0A, 0X08, 0X03   ; codes for K L M N O P Q R S T
+       0A1B 0308 
+00011C 180C 190E 131D 00181         DB 0X0C, 0X18, 0X0E, 0X19, 0X1D, 0X13                           ; codes for U V W X Y Z
+000122 3E3F 383C 2030 00182         DB 0X3F, 0X3E, 0X3C, 0X38, 0X30, 0X20, 0X21, 0X23, 0X27, 0X2F   ; codes for 0 1 2 3 4 5 6 7 8 9
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+       2321 2F27 
+                      00183 
+                      00184         END
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE  6
 
 
 SYMBOL TABLE
@@ -291,7 +302,7 @@ C                                 00000000
 C1INV                             00000004
 C1OUT                             00000006
 C2INV                             00000005
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE  6
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE  7
 
 
 SYMBOL TABLE
@@ -328,9 +339,9 @@ CCPR2                             00000FBB
 CCPR2H                            00000FBC
 CCPR2L                            00000FBB
 CFGS                              00000006
-CHAR_GAP                          000000D8
+CHAR_GAP                          000000E0
 CHAR_IN                           00000003
-CHECK_LETTER                      0000008A
+CHECK_LETTER                      00000092
 CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
@@ -350,7 +361,7 @@ CMIF                              00000006
 CMIP                              00000006
 CNT_IN                            00000001
 CNT_OUT                           00000000
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE  7
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE  8
 
 
 SYMBOL TABLE
@@ -370,7 +381,7 @@ CVROE                             00000006
 CVRR                              00000005
 CVRSS                             00000004
 D                                 00000005
-DASH                              000000CE
+DASH                              000000D6
 DC                                00000001
 DC1B0                             00000004
 DC1B1                             00000005
@@ -381,16 +392,17 @@ DDRB                              TRISB
 DDRC                              TRISC
 DDRD                              TRISD
 DDRE                              TRISE
-DELAY_1T                          000000E4
-DELAY_3T                          000000F8
+DELAY_1T                          000000EC
+DELAY_3T                          00000100
 DONE                              00000001
-DOT                               000000C4
+DOT                               000000CC
 D_A                               00000005
 ECCP1AS                           00000FB6
 ECCPAS0                           00000004
 ECCPAS1                           00000005
 ECCPAS2                           00000006
 ECCPASE                           00000007
+ECHO_WAIT                         0000000C
 EEADR                             00000FA9
 EECON1                            00000FA6
 EECON2                            00000FA7
@@ -399,7 +411,7 @@ EEIE                              00000004
 EEIF                              00000004
 EEIP                              00000004
 EEPGD                             00000007
-ELEM_DONE                         000000BE
+ELEM_DONE                         000000C6
 FAST                              00000001
 FERR                              00000002
 FLTS                              00000002
@@ -408,19 +420,19 @@ FSR0                              00000000
 FSR0H                             00000FEA
 FSR0L                             00000FE9
 FSR1                              00000001
-FSR1H                             00000FE2
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE  8
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE  9
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+FSR1H                             00000FE2
 FSR1L                             00000FE1
 FSR2                              00000002
 FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
-GET_CODE                          00000078
+GET_CODE                          00000080
 GIE                               00000007
 GIEH                              00000007
 GIEL                              00000006
@@ -440,7 +452,7 @@ IDLEN                             00000007
 INDF0                             00000FEF
 INDF1                             00000FE7
 INDF2                             00000FDF
-INNER_LOOP                        000000EC
+INNER_LOOP                        000000F4
 INT0                              00000000
 INT0E                             00000004
 INT0F                             00000001
@@ -467,13 +479,13 @@ INTEDG0                           00000006
 INTEDG1                           00000005
 INTEDG2                           00000004
 INTSRC                            00000007
-IOFS                              00000002
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE  9
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 10
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+IOFS                              00000002
 IPEN                              00000007
 IPR1                              00000F9F
 IPR2                              00000FA2
@@ -526,19 +538,19 @@ LVDL2                             00000002
 LVDL3                             00000003
 LVV0                              00000000
 LVV1                              00000001
-LVV2                              00000002
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE 10
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 11
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LVV2                              00000002
 LVV3                              00000003
-MAIN_LOOP                         00000046
+MAIN_LOOP                         0000004E
 MCLR                              00000003
-MORSE_TABLE                       00000100
+MORSE_TABLE                       00000108
 N                                 00000004
-NEXT_ELEM                         000000B2
+NEXT_ELEM                         000000BA
 NOT_A                             00000005
 NOT_ADDRESS                       00000005
 NOT_BOR                           00000000
@@ -548,7 +560,7 @@ NOT_PD                            00000002
 NOT_POR                           00000001
 NOT_RBPU                          00000007
 NOT_RI                            00000004
-NOT_SPACE                         0000006A
+NOT_SPACE                         00000072
 NOT_SS                            00000005
 NOT_T1SYNC                        00000002
 NOT_T3SYNC                        00000002
@@ -564,7 +576,7 @@ OSCFIF                            00000007
 OSCFIP                            00000007
 OSCTUNE                           00000F9B
 OSTS                              00000003
-OUTER_LOOP                        000000E8
+OUTER_LOOP                        000000F0
 OV                                00000003
 P                                 00000004
 PC                                00000FF9
@@ -585,13 +597,13 @@ PIE1                              00000F9D
 PIE2                              00000FA0
 PIR1                              00000F9E
 PIR2                              00000FA1
-PLAY                              00000072
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE 11
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 12
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PLAY                              0000007A
 PLLEN                             00000006
 PLUSW0                            00000FEB
 PLUSW1                            00000FE3
@@ -644,13 +656,13 @@ RC0                               00000000
 RC1                               00000001
 RC2                               00000002
 RC3                               00000003
-RC4                               00000004
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE 12
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 13
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RC4                               00000004
 RC5                               00000005
 RC6                               00000006
 RC7                               00000007
@@ -666,13 +678,14 @@ RCSTA                             00000FAB
 RD                                00000000
 RD16                              00000007
 RE3                               00000003
-READ_TABLE                        0000009A
+READ_TABLE                        000000A2
 RI                                00000004
 RSEN                              00000001
 RX                                00000007
 RX9                               00000006
 RX9D                              00000000
 RXDTP                             00000005
+RX_CHAR                           00000006
 R_W                               00000002
 S                                 00000003
 SBOREN                            00000006
@@ -686,8 +699,8 @@ SDI                               00000004
 SDO                               00000005
 SEN                               00000000
 SENDB                             00000003
-SEND_CODE                         000000B0
-SEND_DASH                         000000BC
+SEND_CODE                         000000B8
+SEND_DASH                         000000C4
 SMP                               00000007
 SP0                               00000000
 SP1                               00000001
@@ -702,14 +715,14 @@ SS                                00000005
 SSPADD                            00000FC8
 SSPBUF                            00000FC9
 SSPCON1                           00000FC6
-SSPCON2                           00000FC5
-SSPEN                             00000005
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE 13
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 14
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSPCON2                           00000FC5
+SSPEN                             00000005
 SSPIE                             00000003
 SSPIF                             00000003
 SSPIP                             00000003
@@ -719,13 +732,13 @@ SSPM2                             00000002
 SSPM3                             00000003
 SSPOV                             00000006
 SSPSTAT                           00000FC7
-START                             00000028
+START                             00000030
 STATUS                            00000FD8
 STKFUL                            00000007
 STKOVF                            00000007
 STKPTR                            00000FFC
 STKUNF                            00000006
-STORE                             00000014
+STORE                             0000001C
 SWDTE                             00000000
 SWDTEN                            00000000
 SYNC                              00000004
@@ -761,16 +774,16 @@ T3CCP2                            00000006
 T3CKPS0                           00000004
 T3CKPS1                           00000005
 T3CON                             00000FB1
-T3SYNC                            00000002
-TABLAT                            00000FF5
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE 14
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 15
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T3SYNC                            00000002
+TABLAT                            00000FF5
 TAIL                              00000005
-TAKE                              0000004E
+TAKE                              00000056
 TBLPTR                            00000FF6
 TBLPTRH                           00000FF7
 TBLPTRL                           00000FF6
@@ -820,14 +833,14 @@ TRISB1                            00000001
 TRISB2                            00000002
 TRISB3                            00000003
 TRISB4                            00000004
-TRISB5                            00000005
-TRISB6                            00000006
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE 15
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 16
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISB5                            00000005
+TRISB6                            00000006
 TRISB7                            00000007
 TRISC                             00000F94
 TRISC0                            00000000
@@ -864,7 +877,7 @@ VREFP                             00000003
 W                                 00000000
 WCOL                              00000007
 WDTCON                            00000FD1
-WORD_GAP                          000000DE
+WORD_GAP                          000000E6
 WR                                00000001
 WREG                              00000FE8
 WREN                              00000002
@@ -879,14 +892,14 @@ _BORV_0_2L                        000000E7
 _BORV_1_2L                        000000EF
 _BORV_2_2L                        000000F7
 _BORV_3_2L                        000000FF
-_CCP2MX_PORTBE_3H                 000000FE
-_CCP2MX_PORTC_3H                  000000FF
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE 16
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 17
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_CCP2MX_PORTBE_3H                 000000FE
+_CCP2MX_PORTC_3H                  000000FF
 _CONFIG1H                         00300001
 _CONFIG2H                         00300003
 _CONFIG2L                         00300002
@@ -938,14 +951,14 @@ _IESO_OFF_1H                      0000007F
 _IESO_ON_1H                       000000FF
 _LPT1OSC_OFF_3H                   000000FB
 _LPT1OSC_ON_3H                    000000FF
-_LVP_OFF_4L                       000000FB
-_LVP_ON_4L                        000000FF
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE 17
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 18
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_LVP_OFF_4L                       000000FB
+_LVP_ON_4L                        000000FF
 _MCLRE_OFF_3H                     0000007F
 _MCLRE_ON_3H                      000000FF
 _OSC_ECIO6_1H                     000000F5
@@ -997,14 +1010,14 @@ _WRTC_ON_6H                       000000DF
 _WRTD_OFF_6H                      000000FF
 _WRTD_ON_6H                       0000007F
 _XINST_OFF_4L                     000000BF
-_XINST_ON_4L                      000000FF
-__18F2520                         00000001
-MPASM  5.34                EMITTER-SOURCE.ASM   11-9-2026  9:38:16         PAGE 18
+MPASM  5.34                EMITTER-SOURCE.ASM   11-11-2026  8:31:10         PAGE 19
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_XINST_ON_4L                      000000FF
+__18F2520                         00000001
 __DEBUG                           1
 
 
@@ -1014,13 +1027,13 @@ MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
 0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
-0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXX------------ ----------------
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXX---- ----------------
 0000 : -XXX-XX-XXXXXX-- ---------------- ---------------- ----------------
 
 All other memory blocks unused.
 
-Program Memory Bytes Used:   299
-Program Memory Bytes Free: 32469
+Program Memory Bytes Used:   307
+Program Memory Bytes Free: 32461
 
 
 Errors   :     0

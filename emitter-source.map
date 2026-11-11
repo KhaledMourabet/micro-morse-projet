@@ -1,12 +1,12 @@
 MPLINK 4.34, Linker
-Linker Map File - Created Mon Nov 09 09:38:17 2026
+Linker Map File - Created Wed Nov 11 08:31:11 2026
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
                 ---------  ---------  ---------  ---------  ---------
                    .org_0       code   0x000000    program   0x000000
                    .org_1       code   0x000000    program   0x000004
-                   .org_2       code   0x000008    program   0x00011c
+                   .org_2       code   0x000008    program   0x000124
 .config_300001_EMITTER-SOURCE.O    romdata   0x300001    program   0x000001
 .config_300002_EMITTER-SOURCE.O    romdata   0x300002    program   0x000001
 .config_300003_EMITTER-SOURCE.O    romdata   0x300003    program   0x000001
@@ -25,40 +25,41 @@ Linker Map File - Created Mon Nov 09 09:38:17 2026
                                Start         End      
                            ---------   ---------      
                             0x000000    0x000003      
-                            0x000008    0x000123      
+                            0x000008    0x00012b      
                             0x300001    0x300003      
                             0x300005    0x300006      
                             0x300008    0x30000d      
-            299 out of 33048 program addresses used, program memory utilization is 0%
+            307 out of 33048 program addresses used, program memory utilization is 0%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                 CHAR_GAP   0x0000d8    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-             CHECK_LETTER   0x00008a    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                     DASH   0x0000ce    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                 DELAY_1T   0x0000e4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                 DELAY_3T   0x0000f8    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                      DOT   0x0000c4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                ELEM_DONE   0x0000be    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                 GET_CODE   0x000078    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-               INNER_LOOP   0x0000ec    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 CHAR_GAP   0x0000e0    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+             CHECK_LETTER   0x000092    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                     DASH   0x0000d6    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 DELAY_1T   0x0000ec    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 DELAY_3T   0x000100    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                      DOT   0x0000cc    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                ECHO_WAIT   0x00000c    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                ELEM_DONE   0x0000c6    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 GET_CODE   0x000080    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+               INNER_LOOP   0x0000f4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
                       ISR   0x000008    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                MAIN_LOOP   0x000046    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-              MORSE_TABLE   0x000100    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                NEXT_ELEM   0x0000b2    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                NOT_SPACE   0x00006a    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-               OUTER_LOOP   0x0000e8    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                     PLAY   0x000072    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-               READ_TABLE   0x00009a    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                SEND_CODE   0x0000b0    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                SEND_DASH   0x0000bc    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                    START   0x000028    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                    STORE   0x000014    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                     TAKE   0x00004e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                 WORD_GAP   0x0000de    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                MAIN_LOOP   0x00004e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+              MORSE_TABLE   0x000108    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                NEXT_ELEM   0x0000ba    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                NOT_SPACE   0x000072    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+               OUTER_LOOP   0x0000f0    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                     PLAY   0x00007a    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+               READ_TABLE   0x0000a2    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                SEND_CODE   0x0000b8    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                SEND_DASH   0x0000c4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                    START   0x000030    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                    STORE   0x00001c    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                     TAKE   0x000056    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 WORD_GAP   0x0000e6    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
 
 
 
@@ -66,27 +67,28 @@ Linker Map File - Created Mon Nov 09 09:38:17 2026
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
                       ISR   0x000008    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                    STORE   0x000014    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                    START   0x000028    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                MAIN_LOOP   0x000046    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                     TAKE   0x00004e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                NOT_SPACE   0x00006a    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                     PLAY   0x000072    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                 GET_CODE   0x000078    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-             CHECK_LETTER   0x00008a    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-               READ_TABLE   0x00009a    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                SEND_CODE   0x0000b0    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                NEXT_ELEM   0x0000b2    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                SEND_DASH   0x0000bc    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                ELEM_DONE   0x0000be    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                      DOT   0x0000c4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                     DASH   0x0000ce    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                 CHAR_GAP   0x0000d8    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                 WORD_GAP   0x0000de    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                 DELAY_1T   0x0000e4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-               OUTER_LOOP   0x0000e8    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-               INNER_LOOP   0x0000ec    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-                 DELAY_3T   0x0000f8    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
-              MORSE_TABLE   0x000100    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                ECHO_WAIT   0x00000c    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                    STORE   0x00001c    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                    START   0x000030    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                MAIN_LOOP   0x00004e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                     TAKE   0x000056    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                NOT_SPACE   0x000072    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                     PLAY   0x00007a    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 GET_CODE   0x000080    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+             CHECK_LETTER   0x000092    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+               READ_TABLE   0x0000a2    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                SEND_CODE   0x0000b8    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                NEXT_ELEM   0x0000ba    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                SEND_DASH   0x0000c4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                ELEM_DONE   0x0000c6    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                      DOT   0x0000cc    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                     DASH   0x0000d6    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 CHAR_GAP   0x0000e0    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 WORD_GAP   0x0000e6    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 DELAY_1T   0x0000ec    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+               OUTER_LOOP   0x0000f0    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+               INNER_LOOP   0x0000f4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+                 DELAY_3T   0x000100    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
+              MORSE_TABLE   0x000108    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\emitter-source.asm
 
 

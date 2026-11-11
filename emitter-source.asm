@@ -9,23 +9,29 @@ char_in  equ 0x03                  ; address of the character being converted, t
 head     equ 0x04                  ; address of the buffer write index (0 to 15), changed only by the ISR
 tail     equ 0x05                  ; address of the buffer read index (0 to 15), changed only by the main loop
 buffer   equ 0x20                  ; start address of the 16-byte receive buffer (0x20 to 0x2F)
+rx_char  equ 0x06                  ; address of the received character, kept while the ISR works with W
 
 	org 0x00                       ; place the code at the reset vector (address 0)
 	goto start                     ; jump over the interrupt vector to the start of the program
 	org 0x08                       ; place the next code at the interrupt vector (address 8)
 
 isr                                ; label: interrupt routine, runs whenever a character is received
+	movf RCREG, W                  ; read the received character into W (this also clears RCIF)
+	movwf rx_char                  ; save it, because W will be reused below
+echo_wait                          ; label: wait until the transmitter can accept a character
+	btfss PIR1, TXIF               ; skip the next line if TXIF = 1 (TXREG is empty)
+	bra echo_wait                  ; transmitter still busy, check again (at most about 1 ms)
+	movwf TXREG                    ; send the character back to the terminal (W still holds it)
 	incf head, W                   ; W = head + 1, the next write index
 	andlw 0x0F                     ; wrap the index back to 0 after 15
 	cpfseq tail                    ; skip the next line if the next index equals tail (buffer full)
 	bra store                      ; buffer not full, go and store the character
-	movf RCREG, W                  ; buffer full: read and discard the character (this also clears RCIF)
-	retfie FAST                    ; return from the interrupt, restoring W, STATUS and BSR automatically
+	retfie FAST                    ; buffer full: the character is dropped, return and restore W, STATUS and BSR
 store                              ; label: there is room in the buffer
 	lfsr 0, buffer                 ; point FSR0 to the start of the buffer
 	movf head, W                   ; W = write index
 	addwf FSR0L, F                 ; FSR0 now points to the free slot (buffer + head)
-	movf RCREG, W                  ; read the received character (this also clears RCIF)
+	movf rx_char, W                ; get the saved character back into W
 	movwf INDF0                    ; store it in the buffer slot that FSR0 points to
 	incf head, W                   ; W = head + 1
 	andlw 0x0F                     ; wrap the index back to 0 after 15
