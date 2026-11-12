@@ -1,0 +1,62 @@
+MPLINK 4.34, Linker
+Linker Map File - Created Thu Nov 12 15:08:28 2026
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x00007c
+.config_300001_RECEIVER-SOURCE.O    romdata   0x300001    program   0x000001
+.config_300002_RECEIVER-SOURCE.O    romdata   0x300002    program   0x000001
+.config_300003_RECEIVER-SOURCE.O    romdata   0x300003    program   0x000001
+.config_300005_RECEIVER-SOURCE.O    romdata   0x300005    program   0x000001
+.config_300006_RECEIVER-SOURCE.O    romdata   0x300006    program   0x000001
+.config_300008_RECEIVER-SOURCE.O    romdata   0x300008    program   0x000001
+.config_300009_RECEIVER-SOURCE.O    romdata   0x300009    program   0x000001
+.config_30000A_RECEIVER-SOURCE.O    romdata   0x30000a    program   0x000001
+.config_30000B_RECEIVER-SOURCE.O    romdata   0x30000b    program   0x000001
+.config_30000C_RECEIVER-SOURCE.O    romdata   0x30000c    program   0x000001
+.config_30000D_RECEIVER-SOURCE.O    romdata   0x30000d    program   0x000001
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x00007b      
+                            0x300001    0x300003      
+                            0x300005    0x300006      
+                            0x300008    0x30000d      
+            135 out of 33048 program addresses used, program memory utilization is 0%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+               CHAR_EVENT   0x000038    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                CHECK_GAP   0x000024    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                  IS_DASH   0x000066    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                 LOW_WAIT   0x000018    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    PULSE   0x00004e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                     SEND   0x000068    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                SEND_CHAR   0x000074    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                 WAIT_LOW   0x000054    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               WORD_EVENT   0x000042    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                 LOW_WAIT   0x000018    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                CHECK_GAP   0x000024    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               CHAR_EVENT   0x000038    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               WORD_EVENT   0x000042    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    PULSE   0x00004e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                 WAIT_LOW   0x000054    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                  IS_DASH   0x000066    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                     SEND   0x000068    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                SEND_CHAR   0x000074    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+
+
