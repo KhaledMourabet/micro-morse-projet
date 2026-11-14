@@ -1,11 +1,11 @@
 MPLINK 4.34, Linker
-Linker Map File - Created Thu Nov 12 15:08:28 2026
+Linker Map File - Created Sat Nov 14 10:46:07 2026
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
                 ---------  ---------  ---------  ---------  ---------
                    .org_0       code   0x000000    program   0x000000
-                   .org_1       code   0x000000    program   0x00007c
+                   .org_1       code   0x000000    program   0x0000fe
 .config_300001_RECEIVER-SOURCE.O    romdata   0x300001    program   0x000001
 .config_300002_RECEIVER-SOURCE.O    romdata   0x300002    program   0x000001
 .config_300003_RECEIVER-SOURCE.O    romdata   0x300003    program   0x000001
@@ -23,40 +23,58 @@ Linker Map File - Created Thu Nov 12 15:08:28 2026
                               Program Memory Usage 
                                Start         End      
                            ---------   ---------      
-                            0x000000    0x00007b      
+                            0x000000    0x0000fd      
                             0x300001    0x300003      
                             0x300005    0x300006      
                             0x300008    0x30000d      
-            135 out of 33048 program addresses used, program memory utilization is 0%
+            265 out of 33048 program addresses used, program memory utilization is 0%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-               CHAR_EVENT   0x000038    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                CHECK_GAP   0x000024    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                  IS_DASH   0x000066    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                 LOW_WAIT   0x000018    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                    PULSE   0x00004e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                     SEND   0x000068    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                SEND_CHAR   0x000074    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                 WAIT_LOW   0x000054    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-               WORD_EVENT   0x000042    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+              ADD_ELEMENT   0x000078    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               CHAR_EVENT   0x000046    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                CHECK_GAP   0x000032    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                   DECODE   0x000084    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    DIGIT   0x0000b0    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    FOUND   0x0000a4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    INTRO   0x0000ee    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                  IS_DASH   0x000076    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                 LOW_WAIT   0x000026    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+              MORSE_TABLE   0x0000be    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               NEXT_ENTRY   0x000098    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    PULSE   0x00005e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                   SEARCH   0x00008e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                SEND_CHAR   0x0000b6    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+              SEND_STRING   0x0000e2    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               STRING_END   0x0000ec    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                 WAIT_LOW   0x000064    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               WORD_EVENT   0x000052    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
 
 
 
                               Symbols - Sorted by Address
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                 LOW_WAIT   0x000018    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                CHECK_GAP   0x000024    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-               CHAR_EVENT   0x000038    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-               WORD_EVENT   0x000042    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                    PULSE   0x00004e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                 WAIT_LOW   0x000054    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                  IS_DASH   0x000066    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                     SEND   0x000068    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
-                SEND_CHAR   0x000074    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                 LOW_WAIT   0x000026    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                CHECK_GAP   0x000032    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               CHAR_EVENT   0x000046    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               WORD_EVENT   0x000052    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    PULSE   0x00005e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                 WAIT_LOW   0x000064    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                  IS_DASH   0x000076    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+              ADD_ELEMENT   0x000078    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                   DECODE   0x000084    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                   SEARCH   0x00008e    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               NEXT_ENTRY   0x000098    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    FOUND   0x0000a4    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    DIGIT   0x0000b0    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                SEND_CHAR   0x0000b6    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+              MORSE_TABLE   0x0000be    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+              SEND_STRING   0x0000e2    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+               STRING_END   0x0000ec    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
+                    INTRO   0x0000ee    program     static C:\Users\User\Documents\Projet-micro\micro-morse-projet\receiver-source.asm
 
 

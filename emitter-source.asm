@@ -51,6 +51,11 @@ start                              ; label: start of the main program
 	bcf TRISC, 0                   ; make RC0 an output (0 = output)
 	clrf head                      ; start with the write index at 0 (RAM is not cleared at power-up)
 	clrf tail                      ; start with the read index at 0, so the buffer is empty
+	movlw low intro                ; load the low byte of the intro text address
+	movwf TBLPTRL                  ; store it in the table pointer
+	movlw high intro               ; load the high byte of the intro text address
+	movwf TBLPTRH                  ; store it in the table pointer
+	rcall send_string              ; print the intro text on Terminal 1
 	bsf PIE1, RCIE                 ; enable the UART receive interrupt
 	movlw b'11000000'              ; GIE = 1 (global interrupts on), PEIE = 1 (peripheral interrupts on)
 	movwf INTCON                   ; turn the interrupts on
@@ -175,10 +180,28 @@ delay_3T                           ; label: 3T delay routine (300 ms)
 	rcall delay_1T                 ; wait a third 1T
 	return                         ; go back to the caller
 
+send_string                        ; label: prints the text at the table pointer, up to the 0 terminator
+	tblrd*+                        ; read the next byte into TABLAT, then move the pointer on
+	movf TABLAT, W                 ; copy the byte into W (this also sets the zero flag if the byte is 0)
+	bz string_end                  ; the byte is 0: the text is finished
+	rcall send_char                ; send the character through the UART
+	bra send_string                ; go and read the next byte
+string_end                         ; label: end of the text
+	return                         ; go back to the caller
+
+send_char                          ; label: sends the character in W through the UART
+	btfss PIR1, TXIF               ; skip the next line if TXIF = 1 (TXREG is empty)
+	bra send_char                  ; transmitter still busy, check again
+	movwf TXREG                    ; load the character into TXREG, which starts sending it
+	return                         ; go back to the caller
+
 morse_table                        ; label: Morse codes, A to Z then 0 to 9 (36 bytes)
 	db 0x06, 0x11, 0x15, 0x09, 0x02, 0x14, 0x0B, 0x10, 0x04, 0x1E   ; codes for A B C D E F G H I J
 	db 0x0D, 0x12, 0x07, 0x05, 0x0F, 0x16, 0x1B, 0x0A, 0x08, 0x03   ; codes for K L M N O P Q R S T
 	db 0x0C, 0x18, 0x0E, 0x19, 0x1D, 0x13                           ; codes for U V W X Y Z
 	db 0x3F, 0x3E, 0x3C, 0x38, 0x30, 0x20, 0x21, 0x23, 0x27, 0x2F   ; codes for 0 1 2 3 4 5 6 7 8 9
+
+intro                              ; label: the start-up text, ending with a new line and a 0 terminator
+	db "Type your message here:", 0x0D, 0x0A, 0x00   ; text, carriage return, line feed, end marker
 
 	end
