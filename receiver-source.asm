@@ -1,4 +1,4 @@
-	#include <p18f2520.inc>
+#include <p18f2520.inc>
 	config osc = intio67           ; use the internal oscillator, with RA6 and RA7 as normal I/O pins
 	config wdt = off               ; disable the watchdog timer so it never resets the program
 	config pbaden = off            ; make RB4:RB0 digital at reset, so RB0 can read the signal from PIC 1
@@ -38,9 +38,9 @@ low_wait                           ; label: wait in a LOW period for the next pu
 	bra low_wait                   ; gap = 2: nothing left to report, keep waiting
 check_gap                          ; label: compare the LOW time with the thresholds
 	movf TMR0L, W                  ; read the low byte, which also copies the timer's high byte into TMR0H
-	movlw 0x7A                     ; load the word threshold: 0x7A00 counts is about 5T (500 ms)
+	movlw 0xC3                     ; load the silence threshold: 0xC300 counts is about 8T (800 ms)
 	cpfslt TMR0H                   ; skip the next line if the high byte is below the threshold
-	bra word_event                 ; LOW lasted 5T or more: it is the end of a word
+	bra silence_event              ; LOW lasted 8T or more: a human pause, not a space
 	tstfsz gap                     ; skip the next line if gap = 0 (the character end was not reported yet)
 	bra low_wait                   ; gap = 1: already reported, keep waiting
 	movlw 0x30                     ; load the character threshold: 0x3000 counts is about 2T (200 ms)
@@ -56,11 +56,9 @@ char_event                         ; label: the character is finished
 	movwf gap                      ; remember that the character end has been reported (W is still 1)
 	bra low_wait                   ; go back to waiting
 
-word_event                         ; label: the word is finished
-	movlw ' '                      ; load the ASCII code of a space
-	rcall send_char                ; print it on Terminal 2
-	movlw d'2'                     ; load 2 into W
-	movwf gap                      ; remember that the word end has been reported (idle state)
+silence_event                      ; label: a human pause (no space): just stop the timer and wait
+	movlw d'2'                     ; load 2 into W (the idle state)
+	movwf gap                      ; remember that we are idle, nothing to report
 	bcf T0CON, TMR0ON              ; stop Timer0, so it cannot overflow during a long silence
 	bra low_wait                   ; go back to waiting
 
@@ -73,6 +71,9 @@ wait_low                           ; label: wait for the end of the HIGH pulse
 	bra wait_low                   ; signal still high, check again
 	bcf T0CON, TMR0ON              ; stop Timer0 at the end of the pulse
 	movf TMR0L, W                  ; read the low byte, which also copies the timer's high byte into TMR0H
+	movlw 0x60                     ; load the space threshold: 0x6000 counts is about 4T (400 ms)
+	cpfslt TMR0H                   ; skip the next line if the high byte is below the threshold
+	bra is_space                   ; the pulse was long enough to be the space marker
 	movlw 0x30                     ; load the threshold: 0x3000 counts is about 2T (200 ms)
 	cpfslt TMR0H                   ; skip the next line if the high byte is below the threshold (a dot)
 	bra is_dash                    ; the pulse was long: it is a dash
@@ -80,6 +81,15 @@ wait_low                           ; label: wait for the end of the HIGH pulse
 	bra add_element                ; go and add the element
 is_dash                            ; label: the pulse was a dash
 	bsf STATUS, C                  ; dash: set the carry, so a 1 will enter the code
+	bra add_element                ; go and add the element
+is_space                           ; label: the pulse was the space marker (5T high)
+	movlw ' '                      ; load the ASCII code of a space
+	rcall send_char                ; print the space on Terminal 2
+	movlw d'1'                     ; load 1 into W (the end marker)
+	movwf code_reg                 ; reset the code, ready for the next character
+	movlw d'2'                     ; load 2 into W (the idle state)
+	movwf gap                      ; nothing to report in the next LOW period
+	bra low_wait                   ; go back to waiting
 add_element                        ; label: add the element to the code
 	rlcf code_reg, F               ; shift the code left and put the carry (0 or 1) into bit 0
 	clrf gap                       ; a new LOW period starts: nothing reported yet
@@ -142,4 +152,4 @@ string_end                         ; label: end of the text
 
 intro                              ; label: the start-up text, ending with a new line and a 0 terminator
 	db "You received:", 0x0D, 0x0A, 0x00   ; text, carriage return, line feed, end marker
-	end                            ; end of the source file
+	end

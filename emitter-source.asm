@@ -1,4 +1,4 @@
-	#include <p18f2520.inc>        ; load the register and bit names of the PIC18F2520
+#include <p18f2520.inc>
 	config osc = intio67           ; use the internal oscillator, with RA6 and RA7 as normal I/O pins
 	config wdt = off               ; disable the watchdog timer so it never resets the program
 
@@ -77,7 +77,7 @@ take                               ; label: there is a character waiting in the 
 	movlw ' '                      ; load the ASCII code of a space (0x20)
 	cpfseq char_in                 ; skip the next line if the character is a space
 	bra not_space                  ; not a space, go and convert it
-	rcall word_gap                 ; space: add 4T of low to reach the 7T gap between words
+	rcall space_pulse              ; space: send a 5T HIGH marker so PIC2 can detect it unambiguously
 	bra main_loop                  ; go back and look for the next character
 not_space                          ; label: the character is not a space
 	rcall get_code                 ; convert char_in into its Morse code byte (W = 0 if invalid)
@@ -155,9 +155,13 @@ char_gap                           ; label: gap between characters (2T added to 
 	rcall delay_1T                 ; wait another 1T, so 2T in total
 	return                         ; go back to the caller
 
-word_gap                           ; label: gap between words (4T added to the 3T already done)
-	rcall delay_3T                 ; wait 3T
-	rcall delay_1T                 ; wait 1T more, so 4T in total
+space_pulse                        ; label: space marker: 5T HIGH + 3T LOW (replaces word_gap)
+	bsf LATC, 0                    ; set RC0 high: this long pulse is the space marker
+	rcall delay_3T                 ; keep it high for 3T
+	rcall delay_1T                 ; keep it high for 1T more (4T total)
+	rcall delay_1T                 ; keep it high for 1T more (5T total: no Morse element is that long)
+	bcf LATC, 0                    ; set RC0 low, signal and LED off
+	rcall delay_3T                 ; keep it low for 3T, the gap before the next character
 	return                         ; go back to the caller
 
 delay_1T                           ; label: 1T delay routine, 100 ms at 4 MHz
